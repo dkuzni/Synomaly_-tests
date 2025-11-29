@@ -1,6 +1,6 @@
 {
   "dataset": "lits",
-  "epochs": 3000,
+  "epochs": 1,
   "batch_size": 12,
   "num_training_data": 10000,
   "noise_steps": 1000,

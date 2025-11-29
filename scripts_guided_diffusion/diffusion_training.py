@@ -42,6 +42,8 @@ def train(args, resume_model_name=None):
             loss_weight=args['loss_weight'], noise_fn=args["noise_fn"], noise_params=args["noise_params"], diffusion_mode="training"
             )
 
+
+
     model_params = None
     if resume_model_name:
         resume_model_path = f'{args["output_path"]}/model/{resume_model_name}'

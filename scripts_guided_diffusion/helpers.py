@@ -1,18 +1,21 @@
-# Forked from https://github.com/Julian-Wyatt/AnoDDPM/blob/3052f0441a472af55d6e8b1028f5d3156f3d6ed3/helpers.py
-
 import json
 from collections import defaultdict
 
 import torch
 import torchvision.utils
 
+# *** CHEMIN ABSOLU POUR LI.TS (MIS À JOUR AVEC LE CHEMIN KAGGLEHUB) ***
+# Mettez ici le chemin ABSOLU du dossier RACINE contenant les dossiers 'volumes' et 'segmentations' de LiTS.
+LITS_RAW_DATA_ABSOLUTE_PATH = r"C:\Users\danku\Documents\Уроки\ENS\3A\MVA\S1\Medical imaging\Code_medical_image_analysis\Training Batch 1"
+# ************************************************************************
+
+# Chemin Absolu pour l'Ultrasound (basé sur nos échanges précédents)
+US_RAW_DATA_ABSOLUTE_PATH = "C:/Users/danku/Documents/Уроки/ENS/3A/MVA/S1/Medical imaging/train_images"
+
 
 def gridify_output(images, row_size=-1):
     scale_img = lambda img: ((img + 1) * 127.5).clamp(0, 255).to(torch.uint8)
     scaled_images = scale_img(images)
-
-    # images = [(img - img.min()) / (img.max() - img.min()) * 255 for img in images]  # scale each image to [0, 255]
-    # scaled_images = torch.stack(images).to(torch.uint8)
 
     return (torchvision.utils.make_grid(scaled_images, nrow=row_size, pad_value=-1).cpu().data.
             permute(0, 2, 1).contiguous().permute(2, 1, 0))
@@ -27,29 +30,27 @@ def defaultdict_from_json(json_dict):
 
 def get_args_from_json(json_file_name, server):
     """
-    Load the arguments from a json file
+    Charge les arguments depuis un fichier json.
 
-    :param json_file_name: JSON file name
-    :param server: server name
-    :return: loaded arguments
+    :param json_file_name: Nom du fichier JSON
+    :param server: Nom du serveur
+    :return: arguments chargés
     """
 
+    # ... (Code des serveurs IFL et TranslaTUM non modifié) ...
     if server == 'IFL':
-        with open(f'/home/polyaxon-data/lucie_huang/json_args/{json_file_name}.json', 'r') as f:
+        with open(f'/mnt/ceph/sharedscratch/lucie/json_args/{json_file_name}.json', 'r') as f:
             args = json.load(f)
         args = defaultdict_from_json(args)
 
         args['json_file_name'] = json_file_name
 
         if args['dataset'].lower() == "brats23":
-            args['data_path'] = "/home/polyaxon-data/data1/Lucie"
-            args['output_path'] = "/home/polyaxon-data/outputs1/lucie_huang/gd_brats23"
-        elif args['dataset'].lower() == "lits":
-            args['data_path'] = "/home/polyaxon-data/data1/LiTS"
-            args['output_path'] = "/home/polyaxon-data/outputs1/lucie_huang/lits"
+            args['data_path'] = "/mnt/ceph/sharedscratch/lucie/BraTS2023_2017_GLI_Challenge_TrainingData"
+            args['output_path'] = "/mnt/ceph/sharedscratch/lucie/gd_brats23"
         elif args['dataset'].lower() == "ultrasound":
-            args['data_path'] = "/home/polyaxon-data/data1/Lucie/ultrasound/carotid_plaques"
-            args['output_path'] = "/home/polyaxon-data/outputs1/lucie_huang/ultrasound"
+            args['data_path'] = "/mnt/ceph/sharedscratch/lucie/ultrasound"
+            args['output_path'] = "/mnt/ceph/sharedscratch/lucie/ultrasound"
         else:
             raise ValueError(f"Unsupported dataset {args['dataset']}")
 
@@ -70,31 +71,33 @@ def get_args_from_json(json_file_name, server):
             raise ValueError(f"Unsupported dataset {args['dataset']}")
 
     else:
-        # --- LOCAL MACHINE PATHS ---
-        # NOTE: You MUST configure these paths to match your local file system.
-        LOCAL_RAW_DATA_PATH = "../data"      # Root folder where you keep BraTS2023, LiTS, US folders
-        LOCAL_OUTPUT_PATH = "../output"    # Root folder where preprocessed data and models will be saved
-        # ---------------------------
+        # Mode local (Votre configuration)
+        try:
+            with open(f'json_args/{json_file_name}.json', 'r') as f:
+                args = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Configuration JSON 'json_args/{json_file_name}.json' non trouvée.")
 
-        with open(f'json_args/{json_file_name}.json', 'r') as f:
-            args = json.load(f)
         args = defaultdict_from_json(args)
 
         args['json_file_name'] = json_file_name
 
         if args['dataset'].lower() == "brats23":
-            # Assumes raw data is in ../data/BraTS2023
-            args['data_path'] = f"{LOCAL_RAW_DATA_PATH}/BraTS2023"
-            args['output_path'] = f"{LOCAL_OUTPUT_PATH}/BraTS"
+            args['data_path'] = "../data/BraTS2023"
+            args['output_path'] = "../output/BraTS"
         elif args['dataset'].lower() == "ultrasound":
-            # Assumes raw data is in ../data/US
-            args['data_path'] = f"{LOCAL_RAW_DATA_PATH}/US"
-            args['output_path'] = f"{LOCAL_OUTPUT_PATH}/US"
+            # Utiliser le chemin absolu défini
+            args['data_path'] = US_RAW_DATA_ABSOLUTE_PATH
+            args['output_path'] = "../output/US"
         elif args['dataset'].lower() == "lits":
-            # Assumes raw data is in ../data/LiTS
-            args['data_path'] = f"{LOCAL_RAW_DATA_PATH}/LiTS"
-            args['output_path'] = f"{LOCAL_OUTPUT_PATH}/LiTS"
+            # Utiliser le chemin absolu défini
+            args['data_path'] = LITS_RAW_DATA_ABSOLUTE_PATH
+            args['output_path'] = "../output/LiTS"
         else:
             raise ValueError(f"Unsupported dataset {args['dataset']}")
 
+    # Mettre à jour l'image size
+    if 'img_size' in args and args['dataset'].lower() == "lits":
+        args['img_size'] = 128
+    
     return args
