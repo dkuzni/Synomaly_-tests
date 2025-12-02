@@ -8,7 +8,7 @@
   "noise_fn": "synomaly",
   "noise_params": {
     "anomaly_sigma": 3,
-    "anomaly_threshold": 175,
+    "anomaly_threshold":1,
     "anomaly_offset": 1,
     "anomaly_direction": -1
   },

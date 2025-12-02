@@ -358,7 +358,7 @@ def run_inference(args, test_dataset_loader, model, diffusion, groundtruth_anoma
     return evaluation_mean, evaluation_std
 
 
-def create_gaussian_blur_difference_map(x_0, x_pred, kernel_size=3, threshold=5.0):
+def create_gaussian_blur_difference_map(x_0, x_pred, kernel_size=3, threshold=0.0):
     """
     Create a difference map between the input image and the predicted input image with Gaussian blur.
 
@@ -376,12 +376,13 @@ def create_gaussian_blur_difference_map(x_0, x_pred, kernel_size=3, threshold=5.
 
     diff = abs(x_0_blurred - x_pred_blurred)
     diff[diff < threshold] = 0
-
+    """plt.imshow(1*(diff < threshold))
+    plt.show()"""
     diff_final = remove_small_spots(diff)
     return diff_final
 
 
-def remove_small_spots(map, threshold=30):
+def remove_small_spots(map, threshold=0):
     """
     Remove too small spots from the difference map.
 
@@ -389,7 +390,6 @@ def remove_small_spots(map, threshold=30):
     :param threshold: threshold for the size of the spots
     :return: difference map with removed small spots
     """
-
     binary_map = map > 0
     labeled_map, num_features = label(binary_map)
     component_sizes = np.bincount(labeled_map.ravel())
@@ -410,7 +410,7 @@ def plot_detected_anomaly(inference_images, predicted_anomaly_map, groundtruth_a
     :param evaluation_scores: evaluation scores
     :return: plot of the images and evaluation scores
     """
-
+    """
     font_size = 24
 
     # Multi-stage inference
@@ -421,7 +421,7 @@ def plot_detected_anomaly(inference_images, predicted_anomaly_map, groundtruth_a
             axs[i].imshow(image.cpu().detach().numpy().squeeze(), cmap="gray")
             # axs[i].set_title(f"Stage {i // 2}" if i % 2 == 0 else f"Stage {i // 2} noised", fontsize=30)
         plt.suptitle(f"Different stages with {len(inference_noise_steps)} noise stages", fontsize=30)
-        # plt.suptitle(f"Different stages with 1 noise stage", fontsize=30)
+        #plt.suptitle(f"Different stages with 1 noise stage", fontsize=30)
         plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
         plt.tight_layout()
         plt.show()
@@ -429,13 +429,13 @@ def plot_detected_anomaly(inference_images, predicted_anomaly_map, groundtruth_a
         # plot the final result
         fig, axs = plt.subplots(1, 4, figsize=(18, 6))
         axs[0].imshow(inference_images[0].cpu().detach().numpy().squeeze(), cmap="gray")
-        # axs[0].set_title("Input image", fontsize=font_size)
+        axs[0].set_title("Input image", fontsize=font_size)
         axs[1].imshow(inference_images[-3].cpu().detach().numpy().squeeze(), cmap="gray")
-        # axs[1].set_title("Predicted input image", fontsize=font_size)
+        axs[1].set_title("Predicted input image", fontsize=font_size)
         axs[2].imshow(predicted_anomaly_map)
-        # axs[2].set_title(f"Detected anomaly", fontsize=font_size)
+        axs[2].set_title(f"Detected anomaly", fontsize=font_size)
         axs[3].imshow(groundtruth_anomaly_mask.astype(bool))
-        # axs[3].set_title("True anomaly", fontsize=font_size)
+        axs[3].set_title("True anomaly", fontsize=font_size)
 
     # Single-stage inference
     else:
@@ -464,7 +464,8 @@ def plot_detected_anomaly(inference_images, predicted_anomaly_map, groundtruth_a
     plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
     plt.tight_layout()
     plt.show()
-    plt.close('all')
+    plt.close('all')"""
+    print(f"Dice score: {format(evaluation_scores['dice_score'], '.4f')}")
 
 
 
@@ -667,14 +668,18 @@ if __name__ == "__main__":
         json_file = "args_us_best"
         healthy_or_anomalous_mode = "anomalous"          # ["anomalous", "healthy"]
 
-    model_stage = "best_model.pt"   # [checkpoint/diff_epoch=130.pt, params-final.pt, best_model.pt]
+    model_stage = "last_model_pretrained.pt"   # [checkpoint/diff_epoch=130.pt, params-final.pt, best_model.pt]
 
     #Grid search
     # noise_steps = [100, 150, 200, 250, 300, 350, 400]
-    noise_steps = [[100], [150], [200], [250], [300]]
+    """noise_steps = [[100], [150], [200], [250], [300]]
     gaussian_kernel_sizes = [3, 5, 7, 11, 15, 17]
     anomaly_thresholds = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45]
-    diff_thresholds = [0.01]
+    diff_thresholds = [0.01]"""
+    noise_steps = [ [80],[100],]
+    gaussian_kernel_sizes = [1,3,5,7]
+    anomaly_thresholds = [ 0.1,0.05,0.13]
+    diff_thresholds = [0.001]
 
 
 

@@ -30,7 +30,7 @@ ACTION = "detect"  # Set to "preprocess" for data generation first
 # REQUIRED: Select the JSON file (without the '.json' extension) that defines
 # the hyperparameters for your desired dataset/model run.
 # Make sure this file exists in the 'json_args' directory.
-JSON_FILE_NAME = "args_lits"  # <<< CHANGED TO LI.TS CONFIG >>>
+JSON_FILE_NAME = "args_lits_best"  # <<< CHANGED TO LI.TS CONFIG >>>
 
 # CRITICAL: If a download link is available, paste it here.
 # Set to None if you handle the download manually.
@@ -38,10 +38,10 @@ DATASET_URL = None  # <<< TODO: PASTE LI.TS DATASET DOWNLOAD URL HERE >>>
 
 # OPTIONAL (For Training): Set a model checkpoint path if resuming training.
 # Set to None to start from scratch.
-RESUME_MODEL_NAME = None  # e.g., "model/args_us/diff_epoch=100.pt"
+RESUME_MODEL_NAME = "best_model_pretrained.pt"  # e.g., "model/args_us/diff_epoch=100.pt"
 
 # OPTIONAL (For Detection): Set the specific model stage/checkpoint for inference.
-MODEL_STAGE = "best_model.pt"  # e.g., "best_model.pt", "params-final.pt", or a specific epoch checkpoint
+MODEL_STAGE = "best_model_pretrained.pt"  # e.g., "best_model.pt", "params-final.pt", or a specific epoch checkpoint
 
 # OPTIONAL (For Detection): Specify the mode for inference data loading.
 # "anomalous" is typically used for calculating metrics.
